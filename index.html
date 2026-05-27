@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema Avançado de Controle de Portaria Logística</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon"><i class="fa-solid fa-truck-fast"></i></div>
+      <div class="brand-text">
+        <strong>Sistema Avançado de Controle</strong>
+        <span>de Portaria Logística</span>
+      </div>
+    </div>
+    <div class="global-search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="search" id="globalSearch" placeholder="Busca global: protocolo, placa, motorista...">
+      <div class="search-results" id="globalSearchResults"></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-button" id="notificationButton" type="button" title="Alertas">
+        <i class="fa-regular fa-bell"></i>
+        <span class="notification-count" id="notificationCount">0</span>
+      </button>
+      <div class="user-profile">
+        <div class="avatar">UP</div>
+        <div>
+          <strong>Portaria Central</strong>
+          <small>Usuário Portaria</small>
+        </div>
+      </div>
+      <button class="button button-ghost-light" id="logoutButton" type="button">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Sair
+      </button>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <div class="unit-badge">
+      <small>UNIDADE OPERACIONAL</small>
+      <strong>Matriz - Pátio 01</strong>
+      <span><i class="fa-solid fa-circle"></i> Online</span>
+    </div>
+    <nav class="sidebar-menu" aria-label="Menu principal">
+      <button class="nav-item active" data-page="dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
+      <button class="nav-item" data-page="checkin"><i class="fa-solid fa-right-to-bracket"></i> Check-in</button>
+      <button class="nav-item" data-page="checkout"><i class="fa-solid fa-right-from-bracket"></i> Check-out</button>
+      <button class="nav-item" data-page="appointments"><i class="fa-regular fa-calendar-check"></i> Agendamentos</button>
+      <button class="nav-item" data-page="entries"><i class="fa-solid fa-road-barrier"></i> Entradas</button>
+      <button class="nav-item" data-page="exits"><i class="fa-solid fa-flag-checkered"></i> Saídas</button>
+      <button class="nav-item" data-page="trucks"><i class="fa-solid fa-truck"></i> Caminhões</button>
+      <button class="nav-item" data-page="drivers"><i class="fa-solid fa-id-card"></i> Motoristas</button>
+      <button class="nav-item" data-page="carriers"><i class="fa-solid fa-building"></i> Transportadoras</button>
+      <button class="nav-item" data-page="occurrences"><i class="fa-solid fa-triangle-exclamation"></i> Ocorrências</button>
+      <button class="nav-item" data-page="administrative"><i class="fa-solid fa-scale-balanced"></i> Análise Administrativa</button>
+      <button class="nav-item" data-page="reports"><i class="fa-solid fa-file-lines"></i> Relatórios</button>
+      <button class="nav-item" data-page="audit"><i class="fa-solid fa-clock-rotate-left"></i> Auditoria</button>
+      <button class="nav-item" data-page="settings"><i class="fa-solid fa-gears"></i> Configurações</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="progress-label"><span>Operação monitorada</span><strong id="sidebarOccupancy">0 veículos</strong></div>
+      <div class="progress-track"><span id="sidebarProgress"></span></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-heading">
+      <div>
+        <div class="breadcrumb">Portal Corporativo / <span id="breadcrumbPage">Dashboard</span></div>
+        <h1 id="pageTitle">Dashboard Operacional</h1>
+      </div>
+      <div class="heading-actions">
+        <span class="system-date" id="systemDate"></span>
+        <button class="button button-outline" type="button" data-go-page="reports">
+          <i class="fa-solid fa-download"></i> Central de Relatórios
+        </button>
+        <button class="button button-primary" type="button" data-go-page="checkin">
+          <i class="fa-solid fa-plus"></i> Novo Check-in
+        </button>
+      </div>
+    </div>
+
+    <section class="page active" id="page-dashboard">
+      <div class="kpi-grid">
+        <article class="kpi-card accent-blue">
+          <div class="kpi-icon"><i class="fa-solid fa-warehouse"></i></div>
+          <div><span>Caminhões dentro da empresa</span><strong id="kpiInside">0</strong><small>Pátio e docas</small></div>
+        </article>
+        <article class="kpi-card accent-green">
+          <div class="kpi-icon"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
+          <div><span>Entradas hoje</span><strong id="kpiEntriesToday">0</strong><small>Registros confirmados</small></div>
+        </article>
+        <article class="kpi-card accent-teal">
+          <div class="kpi-icon"><i class="fa-solid fa-arrow-right-from-bracket"></i></div>
+          <div><span>Saídas hoje</span><strong id="kpiExitsToday">0</strong><small>Liberações realizadas</small></div>
+        </article>
+        <article class="kpi-card accent-yellow">
+          <div class="kpi-icon"><i class="fa-regular fa-calendar"></i></div>
+          <div><span>Agendamentos pendentes</span><strong id="kpiAppointments">0</strong><small>Aguardando chegada</small></div>
+        </article>
+        <article class="kpi-card accent-red">
+          <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div><span>Ocorrências abertas</span><strong id="kpiOccurrences">0</strong><small>Exigem acompanhamento</small></div>
+        </article>
+        <article class="kpi-card accent-red">
+          <div class="kpi-icon"><i class="fa-solid fa-user-lock"></i></div>
+          <div><span>Motoristas bloqueados</span><strong id="kpiBlockedDrivers">0</strong><small>Restricoes ativas</small></div>
+        </article>
+        <article class="kpi-card accent-green">
+          <div class="kpi-icon"><i class="fa-solid fa-building-circle-check"></i></div>
+          <div><span>Transportadoras ativas</span><strong id="kpiActiveCarriers">0</strong><small>Fornecedores liberados</small></div>
+        </article>
+        <article class="kpi-card accent-blue">
+          <div class="kpi-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+          <div><span>Registros sem saída</span><strong id="kpiNoExit">0</strong><small>Permanência em aberto</small></div>
+        </article>
+      </div>
+
+      <div class="dashboard-layout">
+        <article class="card span-two">
+          <div class="card-header">
+            <div>
+              <h2>Últimos movimentos</h2>
+              <p>Movimentação consolidada da portaria</p>
+            </div>
+            <button class="link-button" type="button" data-go-page="entries">Ver registros</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Protocolo</th>
+                  <th>Movimento</th>
+                  <th>Placa</th>
+                  <th>Motorista</th>
+                  <th>Data/Hora</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardMovementsBody"></tbody>
+            </table>
+          </div>
+        </article>
+        <article class="card alerts-card">
+          <div class="card-header">
+            <div>
+              <h2>Alertas recentes</h2>
+              <p>Eventos que pedem atencao</p>
+            </div>
+          </div>
+          <div class="alerts-list" id="alertsList"></div>
+        </article>
+        <article class="card chart-card">
+          <div class="card-header">
+            <div>
+              <h2>Fluxo dos ultimos 7 dias</h2>
+              <p>Entradas versus saidas</p>
+            </div>
+            <div class="chart-legend"><span class="entry"></span> Entradas <span class="exit"></span> Saídas</div>
+          </div>
+          <div class="bar-chart" id="movementChart"></div>
+        </article>
+        <article class="card operations-card">
+          <div class="card-header">
+            <div>
+              <h2>Indicadores operacionais</h2>
+              <p>Controle e conformidade</p>
+            </div>
+          </div>
+          <div class="indicator-list" id="operationalIndicators"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="page" id="page-checkin">
+      <article class="card form-card">
+        <div class="card-header header-highlight">
+          <div>
+            <h2><i class="fa-solid fa-truck-ramp-box"></i> CHECK-IN DE CAMINHAO</h2>
+            <p>Registro oficial de entrada, documentação e destinação operacional</p>
+          </div>
+          <div class="protocol-panel">
+            <span>Protocolo em preparação</span>
+            <strong id="protocolPreview">Gerado ao salvar</strong>
+          </div>
+        </div>
+        <form id="checkinForm" class="form-grid">
+          <input type="hidden" name="id">
+          <input type="hidden" name="protocol">
+          <div class="field">
+            <label for="entryDate">Data do registro *</label>
+            <input id="entryDate" name="entryDate" type="date" required>
+          </div>
+          <div class="field">
+            <label for="entryTime">Hora de entrada *</label>
+            <input id="entryTime" name="entryTime" type="time" required>
+          </div>
+          <div class="field span-two">
+            <label for="carrierName">Nome da transportadora *</label>
+            <input id="carrierName" name="carrierName" type="text" list="carriersDataList" placeholder="Selecione ou digite a empresa" required>
+            <datalist id="carriersDataList"></datalist>
+          </div>
+          <div class="field span-two">
+            <label for="driverName">Nome do caminhoneiro / motorista *</label>
+            <input id="driverName" name="driverName" type="text" list="driversDataList" required>
+            <datalist id="driversDataList"></datalist>
+          </div>
+          <div class="field">
+            <label for="driverCpf">CPF do motorista *</label>
+            <input id="driverCpf" name="driverCpf" type="text" placeholder="000.000.000-00" required>
+          </div>
+          <div class="field">
+            <label for="driverCnh">CNH do motorista *</label>
+            <input id="driverCnh" name="driverCnh" type="text" required>
+          </div>
+          <div class="field">
+            <label for="cnhCategory">Categoria da CNH *</label>
+            <select id="cnhCategory" name="cnhCategory" required>
+              <option value="">Selecionar</option>
+              <option>C</option>
+              <option>D</option>
+              <option>E</option>
+              <option>AC</option>
+              <option>AD</option>
+              <option>AE</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cnhExpiry">Validade da CNH *</label>
+            <input id="cnhExpiry" name="cnhExpiry" type="date" required>
+          </div>
+          <div class="field">
+            <label for="truckPlate">Placa do caminhão *</label>
+            <input id="truckPlate" name="truckPlate" type="text" placeholder="ABC1D23" required>
+          </div>
+          <div class="field">
+            <label for="trailerPlate">Placa da carreta *</label>
+            <input id="trailerPlate" name="trailerPlate" type="text" placeholder="XYZ9A87" required>
+          </div>
+          <div class="field span-two">
+            <label for="truckModel">Modelo do caminhão *</label>
+            <input id="truckModel" name="truckModel" type="text" list="trucksDataList" required>
+            <datalist id="trucksDataList"></datalist>
+          </div>
+          <div class="field">
+            <label for="cargoType">Tipo de carga *</label>
+            <select id="cargoType" name="cargoType" required>
+              <option value="">Selecionar</option>
+              <option>Materia-prima</option>
+              <option>Produto acabado</option>
+              <option>Insumos industriais</option>
+              <option>Carga refrigerada</option>
+              <option>Equipamentos</option>
+              <option>Devolucao</option>
+              <option>Sem carga</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="approxWeight">Peso aproximado (kg) *</label>
+            <input id="approxWeight" name="approxWeight" type="number" min="0" step="0.01" required>
+          </div>
+          <div class="field">
+            <label for="destinationSector">Setor de destino *</label>
+            <select id="destinationSector" name="destinationSector" required>
+              <option value="">Selecionar</option>
+              <option>Recebimento</option>
+              <option>Expedicao</option>
+              <option>Doca 01</option>
+              <option>Doca 02</option>
+              <option>Almoxarifado</option>
+              <option>Manutencao</option>
+              <option>Administração</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="internalResponsible">Responsável interno *</label>
+            <input id="internalResponsible" name="internalResponsible" type="text" required>
+          </div>
+          <div class="field span-two">
+            <label for="entryReason">Motivo da entrada *</label>
+            <input id="entryReason" name="entryReason" type="text" placeholder="Entrega, coleta, manutencao, visita tecnica..." required>
+          </div>
+          <div class="field full">
+            <label for="entryNotes">Observacoes *</label>
+            <textarea id="entryNotes" name="entryNotes" rows="3" placeholder="Lacres, EPI, doca prevista, conferência inicial..." required></textarea>
+          </div>
+          <div class="form-actions full">
+            <button class="button button-muted" type="reset"><i class="fa-solid fa-eraser"></i> Limpar</button>
+            <button class="button button-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Salvar Check-in</button>
+            <button class="button button-outline" id="generateProtocolButton" type="button"><i class="fa-solid fa-barcode"></i> Gerar protocolo</button>
+            <button class="button button-outline" id="printReceiptButton" type="button"><i class="fa-solid fa-print"></i> Imprimir comprovante</button>
+          </div>
+        </form>
+      </article>
+
+      <article class="card table-card">
+        <div class="card-header">
+          <div>
+            <h2>Últimos Check-ins</h2>
+            <p>Registros recentes e acoes imediatas de portaria</p>
+          </div>
+          <input class="inline-filter" id="checkinQuickFilter" type="search" placeholder="Filtrar lista...">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Protocolo</th>
+                <th>Data/Hora</th>
+                <th>Placa</th>
+                <th>Transportadora</th>
+                <th>Motorista</th>
+                <th>Setor</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="checkinTableBody"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="page" id="page-checkout">
+      <article class="card">
+        <div class="card-header header-highlight">
+          <div>
+            <h2><i class="fa-solid fa-arrow-right-from-bracket"></i> CHECK-OUT DE VEICULO</h2>
+            <p>Localize o veículo em pátio e registre a liberação final</p>
+          </div>
+        </div>
+        <form id="checkoutSearchForm" class="filter-grid checkout-search">
+          <div class="field">
+            <label for="checkoutProtocolSearch">Protocolo</label>
+            <input id="checkoutProtocolSearch" name="protocol" type="text">
+          </div>
+          <div class="field">
+            <label for="checkoutPlateSearch">Placa do caminhão</label>
+            <input id="checkoutPlateSearch" name="plate" type="text">
+          </div>
+          <div class="field">
+            <label for="checkoutDriverSearch">Nome do motorista</label>
+            <input id="checkoutDriverSearch" name="driver" type="text">
+          </div>
+          <div class="filter-actions">
+            <button class="button button-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Buscar veículo</button>
+            <button class="button button-muted" type="reset">Limpar</button>
+          </div>
+        </form>
+      </article>
+      <div class="checkout-layout">
+        <article class="card">
+          <div class="card-header">
+            <div>
+              <h2>Veículos localizados</h2>
+              <p>Registros com entrada confirmada</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Protocolo</th><th>Placa</th><th>Motorista</th><th>Status</th><th></th></tr>
+              </thead>
+              <tbody id="checkoutSearchBody"></tbody>
+            </table>
+          </div>
+        </article>
+        <article class="card checkout-detail" id="checkoutDetailCard">
+          <div class="empty-detail" id="checkoutEmptyDetail">
+            <i class="fa-solid fa-truck-arrow-right"></i>
+            <p>Selecione um registro para realizar o check-out.</p>
+          </div>
+          <div id="checkoutSelectedDetail" class="hidden">
+            <div class="card-header">
+              <div>
+                <h2 id="checkoutSelectedProtocol">Protocolo</h2>
+                <p id="checkoutSelectedSummary"></p>
+              </div>
+              <span class="badge status-inside">Dentro da empresa</span>
+            </div>
+            <div class="record-summary" id="checkoutRecordSummary"></div>
+            <form id="checkoutForm" class="form-grid compact">
+              <input type="hidden" name="recordId">
+              <div class="field">
+                <label for="exitTime">Hora de saida *</label>
+                <input id="exitTime" name="exitTime" type="time" required>
+              </div>
+              <div class="field">
+                <label for="exitResponsible">Conferente responsável *</label>
+                <input id="exitResponsible" name="exitResponsible" type="text" required>
+              </div>
+              <div class="field span-two">
+                <label for="exitSituation">Situação da saída *</label>
+                <select id="exitSituation" name="exitSituation" required>
+                  <option value="">Selecionar</option>
+                  <option>Liberado sem ressalvas</option>
+                  <option>Liberado com observação</option>
+                  <option>Carga conferida</option>
+                  <option>Saída emergencial</option>
+                  <option>Liberação recusada</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="finalNotes">Observacoes finais *</label>
+                <textarea id="finalNotes" name="finalNotes" rows="3" required></textarea>
+              </div>
+              <label class="checkbox-field full">
+                <input type="checkbox" name="releaseConfirmed" required>
+                Confirmo a liberação do veículo e a conferência documental.
+              </label>
+              <div class="form-actions full">
+                <button class="button button-success" type="submit"><i class="fa-solid fa-check-double"></i> Finalizar Check-out</button>
+              </div>
+            </form>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="page" id="page-appointments">
+      <article class="card form-card">
+        <div class="card-header header-highlight">
+          <div><h2>Agendamentos de Chegada</h2><p>Previsao de acesso, fila e prioridade de recebimento</p></div>
+        </div>
+        <form id="appointmentForm" class="form-grid">
+          <input type="hidden" name="id">
+          <div class="field"><label>Data prevista *</label><input name="scheduledDate" type="date" required></div>
+          <div class="field"><label>Hora prevista *</label><input name="scheduledTime" type="time" required></div>
+          <div class="field span-two"><label>Transportadora *</label><input name="carrier" type="text" required></div>
+          <div class="field span-two"><label>Motorista *</label><input name="driver" type="text" required></div>
+          <div class="field"><label>Placa *</label><input name="plate" type="text" required></div>
+          <div class="field"><label>Tipo de carga *</label><input name="cargo" type="text" required></div>
+          <div class="field"><label>Setor responsável *</label><input name="sector" type="text" required></div>
+          <div class="field">
+            <label>Prioridade *</label>
+            <select name="priority" required><option>Normal</option><option>Alta</option><option>Urgente</option><option>Crítica</option></select>
+          </div>
+          <div class="field full"><label>Observacoes</label><textarea name="notes" rows="3"></textarea></div>
+          <div class="form-actions full">
+            <button class="button button-muted" type="reset">Limpar</button>
+            <button class="button button-primary" type="submit">Salvar agendamento</button>
+          </div>
+        </form>
+      </article>
+      <article class="card table-card">
+        <div class="card-header"><div><h2>Agenda de recebimentos</h2><p>Planejamento operacional de docas</p></div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Data</th><th>Hora</th><th>Transportadora</th><th>Motorista</th><th>Placa</th><th>Prioridade</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody id="appointmentsTableBody"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="page" id="page-entries">
+      <article class="card">
+        <div class="card-header header-highlight">
+          <div><h2>Registros de Entrada</h2><p>Pesquisa consolidada de acessos registrados</p></div>
+        </div>
+        <form id="entriesFilters" class="filter-grid wide">
+          <div class="field"><label>Data inicial</label><input name="startDate" type="date"></div>
+          <div class="field"><label>Data final</label><input name="endDate" type="date"></div>
+          <div class="field"><label>Transportadora</label><input name="carrier" type="text"></div>
+          <div class="field"><label>Motorista</label><input name="driver" type="text"></div>
+          <div class="field"><label>Placa</label><input name="plate" type="text"></div>
+          <div class="field"><label>Status</label><select name="status"><option value="">Todos</option><option>Dentro da empresa</option><option>Check-out realizado</option></select></div>
+          <div class="filter-actions">
+            <button class="button button-primary" type="submit">Aplicar filtros</button>
+            <button class="button button-muted" type="reset">Limpar</button>
+          </div>
+        </form>
+      </article>
+      <article class="card table-card">
+        <div class="card-header"><div><h2>Entradas encontradas</h2><p id="entriesCount">0 registros</p></div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Protocolo</th><th>Entrada</th><th>Placa</th><th>Transportadora</th><th>Motorista</th><th>Destino</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody id="entriesTableBody"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="page" id="page-exits">
+      <article class="card">
+        <div class="card-header header-highlight">
+          <div><h2>Registros de Saída</h2><p>Liberações, tempos de permanência e responsáveis</p></div>
+        </div>
+        <form id="exitsFilters" class="filter-grid wide">
+          <div class="field"><label>Data inicial</label><input name="startDate" type="date"></div>
+          <div class="field"><label>Data final</label><input name="endDate" type="date"></div>
+          <div class="field"><label>Transportadora</label><input name="carrier" type="text"></div>
+          <div class="field"><label>Motorista</label><input name="driver" type="text"></div>
+          <div class="field"><label>Placa</label><input name="plate" type="text"></div>
+          <div class="filter-actions">
+            <button class="button button-primary" type="submit">Aplicar filtros</button>
+            <button class="button button-muted" type="reset">Limpar</button>
+          </div>
+        </form>
+      </article>
+      <article class="card table-card">
+        <div class="card-header"><div><h2>Saídas realizadas</h2><p id="exitsCount">0 registros</p></div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Protocolo</th><th>Placa</th><th>Entrada</th><th>Saída</th><th>Permanência</th><th>Conferente</th><th>Situação</th><th>Ações</th></tr></thead>
+            <tbody id="exitsTableBody"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="page" id="page-trucks">
+      <article class="card form-card">
+        <div class="card-header header-highlight"><div><h2>Cadastro de Caminhões</h2><p>Frota autorizada e controle de capacidade</p></div></div>
+        <form id="truckForm" class="form-grid">
+          <input type="hidden" name="id">
+          <div class="field"><label>Placa do caminhão *</label><input name="plate" type="text" required></div>
+          <div class="field"><label>Placa da carreta *</label><input name="trailerPlate" type="text" required></div>
+          <div class="field span-two"><label>Modelo *</label><input name="model" type="text" required></div>
+          <div class="field"><label>Marca *</label><input name="brand" type="text" required></div>
+          <div class="field"><label>Ano *</label><input name="year" type="number" min="1950" max="2100" required></div>
+          <div class="field"><label>Tipo do veículo *</label><select name="type" required><option>Carreta</option><option>Truck</option><option>Toco</option><option>Bitrem</option><option>VUC</option><option>Rodotrem</option></select></div>
+          <div class="field"><label>Capacidade de carga (kg) *</label><input name="capacity" type="number" min="0" required></div>
+          <div class="field"><label>Status *</label><select name="status" required><option>Ativo</option><option>Em manutencao</option><option>Bloqueado</option></select></div>
+          <div class="form-actions full"><button class="button button-muted" type="reset">Limpar</button><button class="button button-primary" type="submit">Salvar caminhão</button></div>
+        </form>
+      </article>
+      <article class="card table-card">
+        <div class="card-header"><div><h2>Frota cadastrada</h2><p>Veículos reconhecidos pela portaria</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Placa</th><th>Carreta</th><th>Modelo/Marca</th><th>Ano</th><th>Tipo</th><th>Capacidade</th><th>Status</th><th>Ações</th></tr></thead><tbody id="trucksTableBody"></tbody></table></div>
+      </article>
+    </section>
+
+    <section class="page" id="page-drivers">
+      <article class="card form-card">
+        <div class="card-header header-highlight"><div><h2>Cadastro de Motoristas</h2><p>Credenciamento, habilitação e restrições de acesso</p></div></div>
+        <form id="driverForm" class="form-grid">
+          <input type="hidden" name="id">
+          <div class="field span-two"><label>Nome *</label><input name="name" type="text" required></div>
+          <div class="field"><label>CPF *</label><input name="cpf" type="text" required></div>
+          <div class="field"><label>CNH *</label><input name="cnh" type="text" required></div>
+          <div class="field"><label>Categoria da CNH *</label><select name="category" required><option>C</option><option>D</option><option>E</option><option>AD</option><option>AE</option></select></div>
+          <div class="field"><label>Validade da CNH *</label><input name="expiry" type="date" required></div>
+          <div class="field"><label>Telefone *</label><input name="phone" type="tel" required></div>
+          <div class="field span-two"><label>Transportadora vinculada *</label><input name="carrier" type="text" required></div>
+          <div class="field"><label>Status *</label><select name="status" required><option>Liberado</option><option>Pendente</option><option>Bloqueado</option></select></div>
+          <div class="field full"><label>Observacoes</label><textarea name="notes" rows="3"></textarea></div>
+          <div class="form-actions full"><button class="button button-muted" type="reset">Limpar</button><button class="button button-primary" type="submit">Salvar motorista</button></div>
+        </form>
+      </article>
+      <article class="card table-card">
+        <div class="card-header"><div><h2>Motoristas credenciados</h2><p>Situação documental e operacional</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Nome</th><th>CPF</th><th>CNH</th><th>Validade</th><th>Transportadora</th><th>Telefone</th><th>Status</th><th>Ações</th></tr></thead><tbody id="driversTableBody"></tbody></table></div>
+      </article>
+    </section>
+
+    <section class="page" id="page-carriers">
+      <article class="card form-card">
+        <div class="card-header header-highlight"><div><h2>Cadastro de Transportadoras</h2><p>Homologação de parceiros e contato operacional</p></div></div>
+        <form id="carrierForm" class="form-grid">
+          <input type="hidden" name="id">
+          <div class="field span-two"><label>Nome da transportadora *</label><input name="name" type="text" required></div>
+          <div class="field"><label>CNPJ *</label><input name="cnpj" type="text" required></div>
+          <div class="field"><label>Telefone *</label><input name="phone" type="tel" required></div>
+          <div class="field span-two"><label>E-mail *</label><input name="email" type="email" required></div>
+          <div class="field full"><label>Endereço *</label><input name="address" type="text" required></div>
+          <div class="field span-two"><label>Responsável *</label><input name="responsible" type="text" required></div>
+          <div class="field"><label>Status *</label><select name="status" required><option>Ativa</option><option>Suspensa</option><option>Bloqueada</option></select></div>
+          <div class="field full"><label>Observacoes</label><textarea name="notes" rows="3"></textarea></div>
+          <div class="form-actions full"><button class="button button-muted" type="reset">Limpar</button><button class="button button-primary" type="submit">Salvar transportadora</button></div>
+        </form>
+      </article>
+      <article class="card table-card">
+        <div class="card-header"><div><h2>Transportadoras registradas</h2><p>Fornecedores habilitados para operação</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Nome</th><th>CNPJ</th><th>Contato</th><th>Responsável</th><th>Status</th><th>Ações</th></tr></thead><tbody id="carriersTableBody"></tbody></table></div>
+      </article>
+    </section>
+
+    <section class="page" id="page-occurrences">
+      <article class="card form-card">
+        <div class="card-header warning-header"><div><h2>Registro de Ocorrências</h2><p>Desvios operacionais, documentais e reclamações</p></div></div>
+        <form id="occurrenceForm" class="form-grid">
+          <input type="hidden" name="id">
+          <div class="field span-two">
+            <label>Tipo da ocorrencia *</label>
+            <select name="type" required>
+              <option>Atraso</option><option>Divergencia de placa</option><option>Motorista sem documento</option>
+              <option>CNH vencida</option><option>Transportadora bloqueada</option><option>Recusa de atividade</option>
+              <option>Problema operacional</option><option>Reclamação interna</option><option>Outro</option>
+            </select>
+          </div>
+          <div class="field"><label>Data e hora *</label><input name="occurredAt" type="datetime-local" required></div>
+          <div class="field span-two"><label>Envolvidos *</label><input name="involved" type="text" required></div>
+          <div class="field">
+            <label>Gravidade *</label>
+            <select name="severity" required><option>Baixa</option><option>Média</option><option>Alta</option><option>Crítica</option></select>
+          </div>
+          <div class="field">
+            <label>Status *</label>
+            <select name="status" required><option>Aberta</option><option>Em analise</option><option>Resolvida</option></select>
+          </div>
+          <div class="field span-two"><label>Responsável pelo registro *</label><input name="responsible" type="text" required></div>
+          <div class="field full"><label>Descrição detalhada *</label><textarea name="description" rows="4" required></textarea></div>
+          <div class="form-actions full"><button class="button button-muted" type="reset">Limpar</button><button class="button button-primary" type="submit">Registrar ocorrencia</button></div>
+        </form>
+      </article>
+      <article class="card table-card">
+        <div class="card-header"><div><h2>Ocorrências monitoradas</h2><p>Fila de tratamento e resolução</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Data/Hora</th><th>Tipo</th><th>Envolvidos</th><th>Gravidade</th><th>Status</th><th>Responsável</th><th>Ações</th></tr></thead><tbody id="occurrencesTableBody"></tbody></table></div>
+      </article>
+    </section>
+
+    <section class="page" id="page-administrative">
+      <article class="card sensitive-banner">
+        <i class="fa-solid fa-shield-halved"></i>
+        <div><strong>Área restrita - Análise Administrativa</strong><p>Registre informações com objetividade, confidencialidade e encaminhamento adequado ao RH ou jurídico.</p></div>
+      </article>
+      <article class="card form-card">
+        <div class="card-header header-highlight"><div><h2>Registro de Situação Interna</h2><p>Módulo de acompanhamento de conflitos trabalhistas e conduta</p></div></div>
+        <form id="administrativeForm" class="form-grid">
+          <input type="hidden" name="id">
+          <div class="field span-two"><label>Nome do funcionário *</label><input name="employee" type="text" placeholder="Ex.: Sofia" required></div>
+          <div class="field"><label>Cargo contratado *</label><input name="role" type="text" required></div>
+          <div class="field"><label>Setor original *</label><input name="originalSector" type="text" required></div>
+          <div class="field full"><label>Atividades contratadas *</label><textarea name="contractedActivities" rows="3" required></textarea></div>
+          <div class="field full"><label>Atividades exigidas posteriormente *</label><textarea name="additionalActivities" rows="3" required></textarea></div>
+          <div class="field span-two"><label>Nome do gerente / supervisor *</label><input name="manager" type="text" required></div>
+          <div class="field span-two">
+            <label>Tipo de situação *</label>
+            <select name="situationType" required>
+              <option>Desvio de função</option><option>Acúmulo de função</option><option>Assédio moral</option>
+              <option>Exposição pública</option><option>Comparação pejorativa</option><option>Isolamento funcional</option>
+              <option>Apelidos e ironias</option><option>Negativa de curso</option><option>Ameaça indireta</option>
+              <option>Justa causa</option><option>Insubordinação</option><option>Desídia</option>
+            </select>
+          </div>
+          <div class="field full"><label>Descrição do ocorrido *</label><textarea name="description" rows="4" required></textarea></div>
+          <div class="field span-two"><label>Datas dos acontecimentos *</label><input name="eventDates" type="text" placeholder="Informe datas e sequencia dos fatos" required></div>
+          <div class="field span-two"><label>Testemunhas</label><input name="witnesses" type="text"></div>
+          <div class="field full"><label>Providência do RH *</label><textarea name="hrAction" rows="3" required></textarea></div>
+          <div class="field"><label>Houve resposta formal do RH? *</label><select name="formalResponse" required><option>Sim</option><option>Não</option></select></div>
+          <div class="field"><label>Existe canal oficial de denúncia? *</label><select name="officialChannel" required><option>Sim</option><option>Não</option></select></div>
+          <div class="field"><label>Existe código de conduta assinado? *</label><select name="conductCode" required><option>Sim</option><option>Não</option></select></div>
+          <div class="field">
+            <label>Situação final *</label>
+            <select name="finalSituation" required>
+              <option>Em análise</option><option>Resolvido</option><option>Encaminhado ao RH</option>
+              <option>Encaminhado ao jurídico</option><option>Demissão aplicada</option>
+            </select>
+          </div>
+          <div class="field full"><label>Observacoes finais</label><textarea name="finalNotes" rows="3"></textarea></div>
+          <div class="form-actions full"><button class="button button-muted" type="reset">Limpar</button><button class="button button-primary" type="submit">Salvar caso administrativo</button></div>
+        </form>
+      </article>
+      <article class="card table-card">
+        <div class="card-header"><div><h2>Historico de Casos Administrativos</h2><p>Controle reservado de encaminhamentos</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Funcionário</th><th>Cargo</th><th>Tipo</th><th>Gerente</th><th>Datas</th><th>Situação final</th><th>Ações</th></tr></thead><tbody id="administrativeTableBody"></tbody></table></div>
+      </article>
+    </section>
+
+    <section class="page" id="page-reports">
+      <article class="card reports-banner">
+        <div><h2>Central Avançada de Relatórios</h2><p>Cruze informações operacionais, documentais e administrativas para exportação.</p></div>
+        <i class="fa-solid fa-chart-pie"></i>
+      </article>
+      <div class="report-layout">
+        <article class="card">
+          <div class="card-header"><div><h2>Filtros analíticos</h2><p>Parametrização da consulta</p></div></div>
+          <form id="reportFilters" class="filter-grid report-filters">
+            <div class="field"><label>Data inicial</label><input name="startDate" type="date"></div>
+            <div class="field"><label>Data final</label><input name="endDate" type="date"></div>
+            <div class="field"><label>Transportadora</label><input name="carrier" type="text"></div>
+            <div class="field"><label>Motorista</label><input name="driver" type="text"></div>
+            <div class="field"><label>Placa</label><input name="plate" type="text"></div>
+            <div class="field"><label>Tipo de veículo</label><input name="vehicleType" type="text"></div>
+            <div class="field"><label>Status</label><select name="status"><option value="">Todos</option><option>Dentro da empresa</option><option>Check-out realizado</option></select></div>
+            <div class="field"><label>Ocorrência</label><input name="occurrence" type="text"></div>
+            <div class="field"><label>Setor</label><input name="sector" type="text"></div>
+            <div class="field"><label>Responsável</label><input name="responsible" type="text"></div>
+            <fieldset class="report-types full">
+              <legend>Relatórios disponíveis</legend>
+              <label><input type="radio" name="reportType" value="entradas" checked> Relatório de entradas</label>
+              <label><input type="radio" name="reportType" value="saidas"> Relatório de saídas</label>
+              <label><input type="radio" name="reportType" value="permanencia"> Relatório de permanência</label>
+              <label><input type="radio" name="reportType" value="transportadora"> Relatório por transportadora</label>
+              <label><input type="radio" name="reportType" value="motorista"> Relatório por motorista</label>
+              <label><input type="radio" name="reportType" value="ocorrencias"> Relatório de ocorrências</label>
+              <label><input type="radio" name="reportType" value="administrativo"> Relatório administrativo</label>
+              <label><input type="radio" name="reportType" value="auditoria"> Relatório de auditoria</label>
+            </fieldset>
+            <div class="form-actions full">
+              <button class="button button-primary" type="submit"><i class="fa-solid fa-chart-column"></i> Gerar relatorio</button>
+              <button class="button button-success" id="exportCsvButton" type="button"><i class="fa-solid fa-file-csv"></i> Exportar CSV</button>
+              <button class="button button-outline" id="printReportButton" type="button"><i class="fa-solid fa-print"></i> Imprimir</button>
+              <button class="button button-muted" type="reset">Limpar filtros</button>
+            </div>
+          </form>
+        </article>
+        <article class="card report-summary">
+          <div class="card-header"><div><h2>Resumo gerencial</h2><p>Resultado da ultima consulta</p></div></div>
+          <div class="summary-stat"><span>Registros encontrados</span><strong id="reportTotal">0</strong></div>
+          <div class="summary-stat"><span>Veículos em pátio</span><strong id="reportInside">0</strong></div>
+          <div class="summary-stat"><span>Média de permanência</span><strong id="reportAverage">--</strong></div>
+          <div class="summary-stat"><span>Ocorrências vinculadas</span><strong id="reportOccurrences">0</strong></div>
+        </article>
+      </div>
+      <article class="card table-card report-output" id="reportOutput">
+        <div class="card-header"><div><h2 id="reportResultTitle">Pré-visualização do relatório</h2><p id="reportResultDescription">Selecione os parâmetros e gere a consulta.</p></div></div>
+        <div class="table-wrap"><table><thead id="reportTableHead"></thead><tbody id="reportTableBody"></tbody></table></div>
+      </article>
+    </section>
+
+    <section class="page" id="page-audit">
+      <article class="card">
+        <div class="card-header header-highlight">
+          <div><h2>Auditoria do Sistema</h2><p>Trilha simulada de operacoes armazenada localmente neste navegador</p></div>
+          <span class="security-chip"><i class="fa-solid fa-lock"></i> Log protegido</span>
+        </div>
+        <form id="auditFilters" class="filter-grid wide">
+          <div class="field"><label>Usuário</label><input name="user" type="text"></div>
+          <div class="field"><label>Ação realizada</label><input name="action" type="text"></div>
+          <div class="field"><label>Tela</label><input name="screen" type="text"></div>
+          <div class="field"><label>Data</label><input name="date" type="date"></div>
+          <div class="filter-actions"><button class="button button-primary" type="submit">Filtrar log</button><button class="button button-muted" type="reset">Limpar</button></div>
+        </form>
+      </article>
+      <article class="card table-card">
+        <div class="card-header"><div><h2>Eventos auditados</h2><p id="auditCount">0 eventos</p></div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Usuário</th><th>Ação realizada</th><th>Tela</th><th>Data</th><th>Hora</th><th>Registro alterado</th><th>Valor antigo</th><th>Valor novo</th></tr></thead>
+            <tbody id="auditTableBody"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="page" id="page-settings">
+      <article class="card settings-card">
+        <div class="card-header header-highlight">
+          <div><h2>Configurações do Sistema</h2><p>Políticas operacionais e comportamento da aplicação</p></div>
+        </div>
+        <form id="settingsForm" class="settings-form">
+          <div class="settings-group">
+            <h3>Identificação e aparência</h3>
+            <div class="form-grid compact">
+              <div class="field span-two"><label>Nome da empresa</label><input name="companyName" type="text" required></div>
+              <div class="field">
+                <label>Tema do sistema</label>
+                <select name="theme"><option value="corporate">Corporativo Azul e Verde</option><option value="dark">Noturno Operacional</option><option value="contrast">Alto Contraste</option></select>
+              </div>
+              <div class="field">
+                <label>Tempo máximo de permanência (horas)</label>
+                <input name="maximumStayHours" type="number" min="1" required>
+              </div>
+            </div>
+          </div>
+          <div class="settings-group">
+            <h3>Regras de controle</h3>
+            <label class="switch-row"><span><strong>Ativar alertas</strong><small>Exibir alertas operacionais no dashboard</small></span><input name="alertsEnabled" type="checkbox"><i></i></label>
+            <label class="switch-row"><span><strong>Ativar modo avançado</strong><small>Disponibilizar análise administrativa e auditoria</small></span><input name="advancedMode" type="checkbox"><i></i></label>
+            <label class="switch-row"><span><strong>Permitir exclusão de registros</strong><small>Habilitar exclusão manual em tabelas</small></span><input name="allowDeletion" type="checkbox"><i></i></label>
+            <label class="switch-row"><span><strong>Exigir CNH válida</strong><small>Bloquear check-in com habilitação vencida</small></span><input name="requireValidCnh" type="checkbox"><i></i></label>
+            <label class="switch-row"><span><strong>Exigir transportadora ativa</strong><small>Validar parceiro cadastrado antes do acesso</small></span><input name="requireActiveCarrier" type="checkbox"><i></i></label>
+          </div>
+          <div class="form-actions">
+            <button class="button button-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Salvar configuracoes</button>
+            <button class="button button-outline" id="restoreSettingsButton" type="button">Restaurar padrao</button>
+          </div>
+        </form>
+      </article>
+    </section>
+  </main>
+
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <div class="modal" id="recordModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 id="modalTitle">Detalhes do registro</h2>
+        <button type="button" class="modal-close" data-close-modal aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer">
+        <button class="button button-outline" id="modalPrintButton" type="button"><i class="fa-solid fa-print"></i> Imprimir</button>
+        <button class="button button-muted" type="button" data-close-modal>Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
